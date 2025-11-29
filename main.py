@@ -4,7 +4,6 @@ from datetime import datetime, time
 from dotenv import load_dotenv
 from google import genai
 from telegram import Update
-from flask import Flask
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -12,94 +11,50 @@ from telegram.ext import (
     ContextTypes,
     filters
 )
-flask_app = Flask(__name__)
-# Load .env file (LOCAL development)
+
+# Load .env values (Railway also loads env automatically)
 load_dotenv()
 
-# Environment variables
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 
 if not TELEGRAM_TOKEN:
-    raise ValueError("TELEGRAM_TOKEN is missing. Add it to your .env or Render environment.")
-
+    raise ValueError("Missing TELEGRAM_TOKEN")
 if not GEMINI_KEY:
-    raise ValueError("GEMINI_KEY is missing. Add it to your .env or Render environment.")
+    raise ValueError("Missing GEMINI_KEY")
 
 # Initialize Gemini client once
 client = genai.Client(api_key=GEMINI_KEY)
 
-# In-memory conversation history
+# Basic memory storage
 conversation_history = {}
 
-
-def _ensure_json_file(path: str):
-    """Ensure the JSON file exists and is a list container."""
-    if not os.path.exists(path):
-        try:
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump([], f, ensure_ascii=False, indent=2)
-        except Exception:
-            # If we can't create the file, ignore; callers will handle errors.
-            pass
-
-
-def save_conversation_entry(user_id, user_text, ai_response, full_prompt=None, username=None, phone_number=None, file_path="conversations.json"):
-    """Append a conversation entry to a JSON file.
-
-    Each entry contains: timestamp, user_id, user_text, full_prompt, ai_response, model
-    """
-    _ensure_json_file(file_path)
-
-    # Use local timezone-aware timestamp with millisecond precision
+def load_logs():
     try:
-        timestamp = datetime.now().astimezone().isoformat(timespec="milliseconds")
-    except TypeError:
-        # Older Python versions may not support timespec param; fall back to full isoformat
-        timestamp = datetime.now().astimezone().isoformat()
+        with open("conversations.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
 
-    entry = {
-        "timestamp": timestamp,
-        "user_id": user_id,
-        "user_text": user_text,
-        "full_prompt": full_prompt,
-        "username": username,
-        "phone_number": phone_number,
-        "ai_response": ai_response,
-        "model": "gemini-2.5-flash",
-    }
-
+def save_logs(data):
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if not isinstance(data, list):
-                data = []
-    except Exception:
-        data = []
-
-    data.append(entry)
-
-    try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception:
-        # If writing fails, don't crash the bot; swallow the exception.
+        with open("conversations.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except:
         pass
 
-
-def search(user_id, user_text, username=None, phone_number=None):
+def search(user_id, text, username=None, phone_number=None):
     previous = conversation_history.get(user_id, "")
 
     prompt = f"""
 Conversation so far:
 {previous}
 
-User: {user_text}
+User: {text}
 
-System: Reply in under 150 words. Stay consistent with the previous conversation.
+System: Reply in under 150 words. Stay consistent with the conversation.
 """
 
-    # Gemini API call
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt
@@ -107,85 +62,56 @@ System: Reply in under 150 words. Stay consistent with the previous conversation
 
     bot_reply = response.text.strip()
 
-    # Save updated conversation
-    conversation_history[user_id] = previous + f"\nUser: {user_text}\nBot: {bot_reply}"
+    conversation_history[user_id] = previous + f"\nUser: {text}\nBot: {bot_reply}"
 
-    # Persist the interaction (user prompt + AI response) to JSON
-    try:
-        save_conversation_entry(
-            user_id=user_id,
-            user_text=user_text,
-            ai_response=bot_reply,
-            full_prompt=prompt,
-            username=username,
-            phone_number=phone_number,
-        )
-    except Exception:
-        # Ignore logging errors to avoid interrupting bot flow
-        pass
+    logs = load_logs()
+    logs.append({
+        "timestamp": datetime.now().isoformat(),
+        "user_id": user_id,
+        "user_text": text,
+        "ai_response": bot_reply,
+        "username": username,
+        "phone_number": phone_number
+    })
+    save_logs(logs)
 
     return bot_reply
 
-
+# Commands
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.from_user.id
-
-    # Save user for daily messages
-    subscribers = context.bot_data.setdefault("subscribers", set())
-    subscribers.add(user_id)
-
-    await update.message.reply_text("You're subscribed for daily updates. Ask me anything.")
-
+    uid = update.message.from_user.id
+    subs = context.bot_data.setdefault("subscribers", set())
+    subs.add(uid)
+    await update.message.reply_text("You're subscribed for daily updates.")
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.from_user.id
-    # Extract message text and optional contact info
+    uid = update.message.from_user.id
     text = update.message.text
-    user = update.message.from_user
-    username = getattr(user, "username", None)
+    username = update.message.from_user.username
+    phone = update.message.contact.phone_number if update.message.contact else None
 
-    # If the user shared a contact, capture phone number
-    phone_number = None
-    if update.message.contact:
-        phone_number = update.message.contact.phone_number
-
-    reply = search(user_id, text, username=username, phone_number=phone_number)
+    reply = search(uid, text, username=username, phone_number=phone)
     await update.message.reply_text(reply)
 
-
-# Daily scheduled job
 async def daily_task(context: ContextTypes.DEFAULT_TYPE):
-    subscribers = context.bot_data.get("subscribers", set())
-    for uid in subscribers:
-        await context.bot.send_message(uid, "Your daily scheduled update.")
+    subs = context.bot_data.get("subscribers", set())
+    for uid in subs:
+        await context.bot.send_message(uid, "Your daily scheduled message.")
 
-def create_telegram_application():
-    """Build and return the `telegram.ext.Application` with handlers configured.
+def main():
+    app = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    This does NOT call `run_polling()` so you can control startup externally
-    and avoid multiple simultaneous getUpdates calls.
-    """
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
-
-    # Daily message at 9:00 AM (server time)
-    application.job_queue.run_daily(
+    # Daily job at 9 AM
+    app.job_queue.run_daily(
         daily_task,
         time(hour=9, minute=0)
     )
 
-    # Handlers
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-    return application
-
-
-@flask_app.route('/')
-def health_check():
-    return "OK"
-
+    print("Bot is running on Railway...")
+    app.run_polling()
 
 if __name__ == "__main__":
-    bot_app = create_telegram_application()
-    print("Bot is running...")
-    bot_app.run_polling()
+    main()
