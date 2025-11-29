@@ -1,0 +1,72 @@
+[
+  {
+    "timestamp": "2025-11-29T09:32:07.136+05:30",
+    "user_id": 1559663228,
+    "user_text": "Hj",
+    "full_prompt": "\nConversation so far:\n\n\nUser: Hj\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": "sri_satya_sai",
+    "phone_number": null,
+    "ai_response": "Hello there!",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "timestamp": "2025-11-29T09:32:37.399+05:30",
+    "user_id": 1559663228,
+    "user_text": "Do you know my name",
+    "full_prompt": "\nConversation so far:\n\nUser: Hj\nBot: Hello there!\n\nUser: Do you know my name\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": "sri_satya_sai",
+    "phone_number": null,
+    "ai_response": "No, I don't know your name yet! You haven't told me.\n\nWould you like to tell me what it is?",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "timestamp": "2025-11-29T09:32:52.668+05:30",
+    "user_id": 1559663228,
+    "user_text": "Satya",
+    "full_prompt": "\nConversation so far:\n\nUser: Hj\nBot: Hello there!\nUser: Do you know my name\nBot: No, I don't know your name yet! You haven't told me.\n\nWould you like to tell me what it is?\n\nUser: Satya\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": "sri_satya_sai",
+    "phone_number": null,
+    "ai_response": "Ah, Satya! It's great to finally know your name. Nice to meet you, Satya!\n\nNow that we're properly introduced, how can I help you today?",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "timestamp": "2025-11-29T09:33:23.516+05:30",
+    "user_id": 1559663228,
+    "user_text": "Prime problem in python",
+    "full_prompt": "\nConversation so far:\n\nUser: Hj\nBot: Hello there!\nUser: Do you know my name\nBot: No, I don't know your name yet! You haven't told me.\n\nWould you like to tell me what it is?\nUser: Satya\nBot: Ah, Satya! It's great to finally know your name. Nice to meet you, Satya!\n\nNow that we're properly introduced, how can I help you today?\n\nUser: Prime problem in python\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": "sri_satya_sai",
+    "phone_number": null,
+    "ai_response": "Okay, Satya, the 'prime problem' in Python is a classic! It usually involves writing a function to determine if a given number is prime.\n\nA prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself.\n\nHere's a basic Python function to check for primality:\n\n```python\ndef is_prime(num):\n    if num <= 1:\n        return False\n    for i in range(2, int(num**0.5) + 1):\n        if num % i == 0:\n            return False\n    return True\n```\n\nThis function efficiently checks for divisors up to the square root of the number. If no divisors are found, it's prime!\n\nDo you have a specific prime-related task in mind, or were you just curious about the general concept?",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "timestamp": "2025-11-29T09:36:13.890+05:30",
+    "user_id": 6153749879,
+    "user_text": "Hi",
+    "full_prompt": "\nConversation so far:\n\n\nUser: Hi\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": null,
+    "phone_number": null,
+    "ai_response": "Hello! How can I assist you today? Please feel free to tell me what you'd like to discuss or achieve.",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "timestamp": "2025-11-29T09:37:10.235+05:30",
+    "user_id": 6153749879,
+    "user_text": "I want movies",
+    "full_prompt": "\nConversation so far:\n\nUser: Hi\nBot: Hello! How can I assist you today? Please feel free to tell me what you'd like to discuss or achieve.\n\nUser: I want movies\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": null,
+    "phone_number": null,
+    "ai_response": "Movies! I can certainly help you with that. To give you the best suggestions, could you tell me a little more about what you're looking for? Are you searching for recommendations based on a specific genre (like action, comedy, or drama), a particular actor, or maybe something new to stream? Or do you need information about a movie?",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "timestamp": "2025-11-29T09:37:26.817+05:30",
+    "user_id": 6153749879,
+    "user_text": "Action",
+    "full_prompt": "\nConversation so far:\n\nUser: Hi\nBot: Hello! How can I assist you today? Please feel free to tell me what you'd like to discuss or achieve.\nUser: I want movies\nBot: Movies! I can certainly help you with that. To give you the best suggestions, could you tell me a little more about what you're looking for? Are you searching for recommendations based on a specific genre (like action, comedy, or drama), a particular actor, or maybe something new to stream? Or do you need information about a movie?\n\nUser: Action\n\nSystem: Reply in under 150 words. Stay consistent with the previous conversation.\n",
+    "username": null,
+    "phone_number": null,
+    "ai_response": "Great! Action movies it is – a fantastic choice for excitement and thrills.\n\nTo narrow it down and find something perfect for you, what kind of action are you in the mood for? For example, are you thinking:\n\n*   **Fast-paced thrillers** with car chases and spies?\n*   **Superhero epics** with incredible powers?\n*   **Martial arts films** with impressive fight choreography?\n*   **Classic action** from a specific era, or something **brand new**?\n\nLet me know what kind of adrenaline rush you're looking for!",
+    "model": "gemini-2.5-flash"
+  }
+]
